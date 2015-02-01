@@ -1,0 +1,33 @@
+apply plugin: 'java'
+
+sourceCompatibility = 1.5
+version = '1.0'
+
+repositories {
+    mavenCentral()
+    flatDir {
+        dirs 'libs'
+    }
+}
+
+repositories {
+    mavenCentral()
+    flatDir { dirs 'libs' }
+}
+
+dependencies {
+    testCompile group: 'junit', name: 'junit', version: '4.11'
+}
+
+dependencies {
+    compile fileTree(dir: 'libs', include: ['*.jar'])
+}
+
+dependencies{
+    apply plugin: 'idea'
+    apply plugin: 'maven'
+    compile 'com.vividsolutions:jts:1.13'
+    compile 'com.googlecode.efficient-java-matrix-library:ejml:0.25'
+}
+
+
