@@ -6,8 +6,10 @@ import de.hsmainz.gi.indoornavcl.Measurement;
 import de.hsmainz.gi.indoornavcl.comm.Location;
 import org.ejml.simple.SimpleMatrix;
 
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Map;
 
 /**
@@ -15,7 +17,7 @@ import java.util.Map;
  *
  * Created by Saufaus on 31.01.2015.
  */
-public class Wrapper implements Locator{
+public class Wrapper {
 
 
 
@@ -27,7 +29,12 @@ public class Wrapper implements Locator{
     public static SimpleMatrix locatorToObservations (Map<Location, Measurement> locations){
 
         int u = 4;
+        int k = 0;                                                                                                      // Iterator for the output matrix
+
+        double thresholdDistance = 6.0;                                                                                 // Distance up to which an observation can be used
         double mediandistance = -1;
+
+        ArrayList<Integer> sortedObservations = new ArrayList<Integer>();
         SimpleMatrix output = new SimpleMatrix(locations.keySet().size(), u);                                           // Set size
         ArrayList<Measurement> rawObservations = new ArrayList<Measurement>();
 
@@ -42,22 +49,40 @@ public class Wrapper implements Locator{
             // if more then one observation is found, filter for median.
             if(rawObservations.size() > 1){
 
+                // Sort raw observations
+                for (int l=0; l< rawObservations.size();l++) {
+                    sortedObservations.add(rawObservations.get(i).getRssi());
+                }
+                Collections.sort(sortedObservations);                                                                   //
+                System.out.println("Number of sorted observations before filtering for median: " + sortedObservations.size());
+
                 // if list has even size, form median.
                 if (rawObservations.size() % 2 == 0) {
-                    mediandistance = (rawObservations.get(rawObservations.size() / 2).getRssi() + rawObservations.get((rawObservations.size() / 2) + 1).getRssi()) / 2;
+                    mediandistance = (sortedObservations.get(sortedObservations.size() / 2) + sortedObservations.get(( sortedObservations.size() / 2) + 1)) / 2;
                 } else {
-                    mediandistance = rawObservations.get((rawObservations.size() + 1) / 2).getRssi();
+                    mediandistance = sortedObservations.get((sortedObservations.size() + 1) / 2);
                 }
-
             } else if (rawObservations.size() == 1){
-                mediandistance = rawObservations.get(0).getRssi();
+                mediandistance = sortedObservations.get(0);
             }
 
-            // Add the position of the beacon and the calculated distance from the observed pseudoranges to output matrix
-            output.set(i,0,foundLocations.get(i).getCoord().getX());                                                     // X-coordinate
-            output.set(i,1,foundLocations.get(i).getCoord().getY());                                                     // Y-coordinate
-            output.set(i,2,2.5);                                                                                         // Z-coordinate
-            output.set(i,3,DistanceCalculation.calculateDistance(rawObservations.get(0).getTxPower(), mediandistance));  // calculated distance
+            System.out.println("Number of sorted observations after filtering for median: " + sortedObservations.size());
+            for (int l=0;l<sortedObservations.size();l++){
+                System.out.println(sortedObservations.get(l).toString());
+            }
+
+            // Check if found median observation is suitable
+            if (DistanceCalculation.calculateDistancePoly3(rawObservations.get(0).getTxPower(), mediandistance) <= thresholdDistance) {
+                // Add the position of the beacon and the calculated distance from the observed pseudoranges to output matrix
+                output.set(k, 0, foundLocations.get(i).getCoord().getX());                                                     // X-coordinate
+                output.set(k, 1, foundLocations.get(i).getCoord().getY());                                                     // Y-coordinate
+                output.set(k, 2, 2.5);                                                                                         // Z-coordinate
+                output.set(k, 3, DistanceCalculation.calculateDistancePoly3(rawObservations.get(0).getTxPower(), mediandistance));  // calculated distance
+                k++;
+            }
+
+            // Null rawObservations for the next pass.
+            rawObservations.clear();
         }
 
         return output;
@@ -73,10 +98,5 @@ public class Wrapper implements Locator{
         Point output = gf.createPoint(new Coordinate(input.get(0,0),input.get(1,0),input.get(2,0)));
         System.out.println("Point created: " + output.getCoordinate().toString());
         return output;
-    }
-
-    @Override
-    public Point getLocation(Map<Location, Measurement> locations) {
-        return null;
     }
 }

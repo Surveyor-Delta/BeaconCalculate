@@ -1,0 +1,10 @@
+<component name="ArtifactManager">
+  <artifact type="jar" name="BeaconCalculate:jar">
+    <output-path>$PROJECT_DIR$/out/artifacts/BeaconCalculate_jar</output-path>
+    <root id="archive" name="BeaconCalculate.jar">
+      <element id="module-output" name="BeaconCalculate" />
+      <element id="extracted-dir" path="$PROJECT_DIR$/src/libs/ejml-0.25.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="$PROJECT_DIR$/src/libs/jts-1.13.jar" path-in-jar="/" />
+    </root>
+  </artifact>
+</component>

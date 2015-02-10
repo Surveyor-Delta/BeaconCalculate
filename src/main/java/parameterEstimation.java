@@ -16,7 +16,7 @@ public class parameterEstimation {
     private final double EPS = 0.0001;
     private boolean initialized = false;
     private boolean sigma_s_changed = false;
-    private double sigma_s = 1.0D;                              // Standard deviation. Can be changed but in modern computations is not needed anymore
+    private double sigma_s = 0.3D;                              // Standard deviation. Can be changed but in modern computations is not needed anymore
     private double[] lastPosition = {0, 0, 0};
 
 
@@ -29,9 +29,6 @@ public class parameterEstimation {
      */
 
     public SimpleMatrix estimate(SimpleMatrix inputMatrix) {
-
-
-
         // Calculating the DOF (degrees of freedom)
         int n = inputMatrix.numRows();                          // # of observations
         int u = 4;                                              // # of unknowns (X-,X-,Z-coordinate and scale)
@@ -82,7 +79,12 @@ public class parameterEstimation {
 
             // set status to initialized
             setInitialized(true);
+            System.out.println("Calculated starting position: " + lastPosition[0] + " " + lastPosition[1] + " " + lastPosition[2] + "");
+            System.out.println();
         }
+
+        System.out.println("Value for sigma_s: " + sigma_s + " [m]");
+        System.out.println();
 
         for (int i=0;i<n;i++){
             L.set(i,inputMatrix.get(i,3));
@@ -113,6 +115,7 @@ public class parameterEstimation {
         A.set(i, 3, Math.sqrt( Math.pow((inputMatrix.get(i,0)-X_0.get(0)), 2) + Math.pow((inputMatrix.get(i,1) - X_0.get(1)), 2) + Math.pow(inputMatrix.get(i,2) - X_0.get(2),2) ));
         }
 
+        System.out.println("Desginmatrix: ");
         A.print("%10.4f");
 
         N = A.transpose().mult(P.mult(A));
@@ -154,10 +157,12 @@ public class parameterEstimation {
         output.set(3,1,Math.sqrt(sigma_dx.get(3,3)));           // sigma scale
 
         System.out.println();
+        System.out.println("Sigma_dx:");
         sigma_dx.print("%8.6f");
         System.out.println();
+        System.out.println("Koordiante / Std.abw");
         output.print("%10.5f");
-
+        System.out.printf("");
         return output;
     }
 
@@ -172,6 +177,7 @@ public class parameterEstimation {
     }
 
     public boolean isInitialized() {
+
         return initialized;
     }
 
