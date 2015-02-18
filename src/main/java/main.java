@@ -83,7 +83,7 @@ public class main{
         //Est.setLastPosition(pos);
 
         // Return estimated position as JTS.Point
-        Wrapper.observationsToJTSPoint(Est.estimate(test), 1);
+        Wrapper.observationsToJTSPoint(Est.estimateBIBER(test), 1);
         long runTime = System.currentTimeMillis() - startTime;
 
        // Print time needed
